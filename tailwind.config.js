@@ -6,11 +6,8 @@ export default {
   ],
   theme: {
     extend: {
-      fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-      },
-      animation: {
-        'fade-in': 'fadeIn 0.2s ease-out',
+      screens: {
+        'xs': '375px',
       },
     },
   },
