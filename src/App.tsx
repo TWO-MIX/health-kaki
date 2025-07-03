@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { Heart, Activity, Droplets, Gauge, Plus, BarChart3, Clock, Lightbulb, Menu, X } from 'lucide-react'
+import { Heart, Activity, Droplets, Gauge, Plus, BarChart3, Clock, Lightbulb, Menu, X, Settings } from 'lucide-react'
 import AddMetricModal from './components/AddMetricModal'
 import Dashboard from './components/Dashboard'
 import HistoryView from './components/HistoryView'
 import HealthInsights from './components/HealthInsights'
+import CustomizationModal from './components/CustomizationModal'
 
 export interface HealthMetric {
   id: string
@@ -20,8 +21,11 @@ type ViewType = 'dashboard' | 'history' | 'insights'
 const App: React.FC = () => {
   const [metrics, setMetrics] = useState<HealthMetric[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isCustomizationOpen, setIsCustomizationOpen] = useState(false)
   const [currentView, setCurrentView] = useState<ViewType>('dashboard')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [metricOrder, setMetricOrder] = useState<string[]>([])
+  const [visibilitySettings, setVisibilitySettings] = useState<Record<string, boolean>>({})
 
   const metricConfigs = [
     {
@@ -62,6 +66,22 @@ const App: React.FC = () => {
     }
   ]
 
+  // Initialize default settings
+  useEffect(() => {
+    const defaultOrder = metricConfigs.map(config => config.type)
+    const defaultVisibility = metricConfigs.reduce((acc, config) => {
+      acc[config.type] = true
+      return acc
+    }, {} as Record<string, boolean>)
+
+    // Load saved settings or use defaults
+    const savedOrder = localStorage.getItem('metricOrder')
+    const savedVisibility = localStorage.getItem('visibilitySettings')
+
+    setMetricOrder(savedOrder ? JSON.parse(savedOrder) : defaultOrder)
+    setVisibilitySettings(savedVisibility ? JSON.parse(savedVisibility) : defaultVisibility)
+  }, [])
+
   // Load data from localStorage on component mount
   useEffect(() => {
     const savedMetrics = localStorage.getItem('healthMetrics')
@@ -78,6 +98,19 @@ const App: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('healthMetrics', JSON.stringify(metrics))
   }, [metrics])
+
+  // Save customization settings
+  useEffect(() => {
+    if (metricOrder.length > 0) {
+      localStorage.setItem('metricOrder', JSON.stringify(metricOrder))
+    }
+  }, [metricOrder])
+
+  useEffect(() => {
+    if (Object.keys(visibilitySettings).length > 0) {
+      localStorage.setItem('visibilitySettings', JSON.stringify(visibilitySettings))
+    }
+  }, [visibilitySettings])
 
   const addMetric = (newMetric: Omit<HealthMetric, 'id' | 'timestamp'>) => {
     const metric: HealthMetric = {
@@ -105,6 +138,14 @@ const App: React.FC = () => {
     closeMobileMenu()
   }
 
+  const handleOrderChange = (newOrder: string[]) => {
+    setMetricOrder(newOrder)
+  }
+
+  const handleVisibilityChange = (newVisibility: Record<string, boolean>) => {
+    setVisibilitySettings(newVisibility)
+  }
+
   const renderCurrentView = () => {
     switch (currentView) {
       case 'dashboard':
@@ -113,6 +154,8 @@ const App: React.FC = () => {
             metrics={metrics}
             metricConfigs={metricConfigs}
             getLatestMetric={getLatestMetric}
+            metricOrder={metricOrder}
+            visibilitySettings={visibilitySettings}
           />
         )
       case 'history':
@@ -190,14 +233,23 @@ const App: React.FC = () => {
               </button>
             </nav>
 
-            {/* Desktop Add Button */}
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-green-500 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-green-600 transition-all duration-200 shadow-lg hover:shadow-xl text-sm ml-4"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add Metrics</span>
-            </button>
+            {/* Desktop Action Buttons */}
+            <div className="flex items-center space-x-2 ml-4">
+              <button
+                onClick={() => setIsCustomizationOpen(true)}
+                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors text-sm"
+              >
+                <Settings className="h-4 w-4" />
+                <span>Customize</span>
+              </button>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-green-500 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-green-600 transition-all duration-200 shadow-lg hover:shadow-xl text-sm"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add Metrics</span>
+              </button>
+            </div>
           </div>
 
           {/* Mobile/Tablet Layout - Vertical Stack */}
@@ -267,6 +319,14 @@ const App: React.FC = () => {
                 </button>
                 
                 <button
+                  onClick={() => setIsCustomizationOpen(true)}
+                  className="flex items-center space-x-1 xs:space-x-1.5 px-2 xs:px-3 sm:px-4 py-1.5 xs:py-2 rounded-lg font-medium transition-colors text-xs xs:text-sm whitespace-nowrap flex-shrink-0 text-gray-600 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                >
+                  <Settings className="h-3 w-3 xs:h-4 xs:w-4" />
+                  <span>Customize</span>
+                </button>
+                
+                <button
                   onClick={() => setIsModalOpen(true)}
                   className="flex items-center space-x-1 xs:space-x-1.5 bg-gradient-to-r from-blue-500 to-green-500 text-white px-2 xs:px-3 sm:px-4 py-1.5 xs:py-2 rounded-lg hover:from-blue-600 hover:to-green-600 transition-all duration-200 shadow-lg text-xs xs:text-sm whitespace-nowrap flex-shrink-0"
                 >
@@ -315,6 +375,16 @@ const App: React.FC = () => {
                   </button>
                   <button
                     onClick={() => {
+                      setIsCustomizationOpen(true)
+                      closeMobileMenu()
+                    }}
+                    className="flex items-center space-x-2 xs:space-x-3 px-2 xs:px-3 py-2 xs:py-2.5 rounded-lg font-medium transition-colors text-xs xs:text-sm text-gray-600 hover:text-gray-900 hover:bg-white"
+                  >
+                    <Settings className="h-3 w-3 xs:h-4 xs:w-4 flex-shrink-0" />
+                    <span>Customize Dashboard</span>
+                  </button>
+                  <button
+                    onClick={() => {
                       setIsModalOpen(true)
                       closeMobileMenu()
                     }}
@@ -352,6 +422,17 @@ const App: React.FC = () => {
         onAddMetric={addMetric}
         metricConfigs={metricConfigs}
         metrics={metrics}
+      />
+
+      {/* Customization Modal */}
+      <CustomizationModal
+        isOpen={isCustomizationOpen}
+        onClose={() => setIsCustomizationOpen(false)}
+        metricConfigs={metricConfigs}
+        onOrderChange={handleOrderChange}
+        onVisibilityChange={handleVisibilityChange}
+        currentOrder={metricOrder}
+        visibilitySettings={visibilitySettings}
       />
     </div>
   )
