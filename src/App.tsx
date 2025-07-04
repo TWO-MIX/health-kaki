@@ -200,8 +200,8 @@ const App: React.FC = () => {
                 <Heart className="h-6 w-6 text-white" />
               </div>
               <div className="min-w-0 flex-1">
-                <h1 className="text-xl font-bold text-gray-900 truncate">Health Kaki</h1>
-                <p className="text-sm text-gray-500">Your personal health companion</p>
+                <h1 className="text-xl font-bold text-gray-900 truncate">Health Kaki v995 updated 4 Jul 2025</h1>
+                <p className="text-sm text-gray-500">Health management at ease, at peace</p>
               </div>
             </div>
 
