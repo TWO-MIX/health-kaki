@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { Heart, Activity, Droplets, Gauge, Plus, BarChart3, Clock, Lightbulb, Menu, X, Settings } from 'lucide-react'
+import { Heart, Activity, Droplets, Gauge, Plus, BarChart3, Clock, Lightbulb, Menu, X, Settings, TrendingUp } from 'lucide-react'
 import AddMetricModal from './components/AddMetricModal'
 import Dashboard from './components/Dashboard'
 import HistoryView from './components/HistoryView'
 import HealthInsights from './components/HealthInsights'
+import TrendVisualization from './components/TrendVisualization'
 import CustomizationModal from './components/CustomizationModal'
 
 export interface HealthMetric {
@@ -16,7 +17,7 @@ export interface HealthMetric {
   notes?: string
 }
 
-type ViewType = 'dashboard' | 'history' | 'insights'
+type ViewType = 'dashboard' | 'history' | 'insights' | 'trends'
 
 const App: React.FC = () => {
   const [metrics, setMetrics] = useState<HealthMetric[]>([])
@@ -173,6 +174,14 @@ const App: React.FC = () => {
             metricConfigs={metricConfigs}
           />
         )
+      case 'trends':
+        return (
+          <TrendVisualization
+            metrics={metrics}
+            metricConfigs={metricConfigs}
+            visibilitySettings={visibilitySettings}
+          />
+        )
       default:
         return null
     }
@@ -210,6 +219,17 @@ const App: React.FC = () => {
                 Dashboard
               </button>
               <button
+                onClick={() => setCurrentView('trends')}
+                className={`px-3 py-2 rounded-lg font-medium transition-colors text-sm ${
+                  currentView === 'trends'
+                    ? 'bg-green-100 text-green-700'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                <TrendingUp className="h-4 w-4 inline mr-1" />
+                Trends
+              </button>
+              <button
                 onClick={() => setCurrentView('history')}
                 className={`px-3 py-2 rounded-lg font-medium transition-colors text-sm ${
                   currentView === 'history'
@@ -224,7 +244,7 @@ const App: React.FC = () => {
                 onClick={() => setCurrentView('insights')}
                 className={`px-3 py-2 rounded-lg font-medium transition-colors text-sm ${
                   currentView === 'insights'
-                    ? 'bg-blue-100 text-blue-700'
+                    ? 'bg-purple-100 text-purple-700'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
@@ -295,6 +315,18 @@ const App: React.FC = () => {
                 </button>
                 
                 <button
+                  onClick={() => setCurrentView('trends')}
+                  className={`flex items-center space-x-1 xs:space-x-1.5 px-2 xs:px-3 sm:px-4 py-1.5 xs:py-2 rounded-lg font-medium transition-colors text-xs xs:text-sm whitespace-nowrap flex-shrink-0 ${
+                    currentView === 'trends'
+                      ? 'bg-green-100 text-green-700 border border-green-200'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 border border-gray-200'
+                  }`}
+                >
+                  <TrendingUp className="h-3 w-3 xs:h-4 xs:w-4" />
+                  <span>Trends</span>
+                </button>
+                
+                <button
                   onClick={() => setCurrentView('history')}
                   className={`flex items-center space-x-1 xs:space-x-1.5 px-2 xs:px-3 sm:px-4 py-1.5 xs:py-2 rounded-lg font-medium transition-colors text-xs xs:text-sm whitespace-nowrap flex-shrink-0 ${
                     currentView === 'history'
@@ -350,6 +382,17 @@ const App: React.FC = () => {
                   >
                     <BarChart3 className="h-3 w-3 xs:h-4 xs:w-4 flex-shrink-0" />
                     <span>Dashboard</span>
+                  </button>
+                  <button
+                    onClick={() => handleViewChange('trends')}
+                    className={`flex items-center space-x-2 xs:space-x-3 px-2 xs:px-3 py-2 xs:py-2.5 rounded-lg font-medium transition-colors text-xs xs:text-sm ${
+                      currentView === 'trends'
+                        ? 'bg-green-100 text-green-700'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-white'
+                    }`}
+                  >
+                    <TrendingUp className="h-3 w-3 xs:h-4 xs:w-4 flex-shrink-0" />
+                    <span>Medical Trends</span>
                   </button>
                   <button
                     onClick={() => handleViewChange('history')}
