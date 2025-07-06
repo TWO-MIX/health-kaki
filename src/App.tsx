@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react'
-import { Heart, Activity, Droplets, Gauge, Plus, BarChart3, Clock, Lightbulb, Menu, X, Settings, TrendingUp } from 'lucide-react'
+import { Heart, Activity, Droplets, Gauge, Plus, BarChart3, Clock, Lightbulb, Menu, X, Settings, TrendingUp, User } from 'lucide-react'
 import AddMetricModal from './components/AddMetricModal'
+import SingleMetricModal from './components/SingleMetricModal'
 import Dashboard from './components/Dashboard'
 import HistoryView from './components/HistoryView'
 import HealthInsights from './components/HealthInsights'
 import TrendVisualization from './components/TrendVisualization'
 import CustomizationModal from './components/CustomizationModal'
+import UserProfileModal, { UserProfile } from './components/UserProfileModal'
 
 export interface HealthMetric {
   id: string
@@ -22,11 +24,15 @@ type ViewType = 'dashboard' | 'history' | 'insights' | 'trends'
 const App: React.FC = () => {
   const [metrics, setMetrics] = useState<HealthMetric[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isSingleMetricModalOpen, setIsSingleMetricModalOpen] = useState(false)
+  const [selectedMetricType, setSelectedMetricType] = useState<HealthMetric['type'] | null>(null)
   const [isCustomizationOpen, setIsCustomizationOpen] = useState(false)
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [currentView, setCurrentView] = useState<ViewType>('dashboard')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [metricOrder, setMetricOrder] = useState<string[]>([])
   const [visibilitySettings, setVisibilitySettings] = useState<Record<string, boolean>>({})
+  const [userProfile, setUserProfile] = useState<UserProfile | undefined>(undefined)
 
   const metricConfigs = [
     {
@@ -93,12 +99,25 @@ const App: React.FC = () => {
       }))
       setMetrics(parsedMetrics)
     }
+
+    // Load user profile
+    const savedProfile = localStorage.getItem('userProfile')
+    if (savedProfile) {
+      setUserProfile(JSON.parse(savedProfile))
+    }
   }, [])
 
   // Save to localStorage whenever metrics change
   useEffect(() => {
     localStorage.setItem('healthMetrics', JSON.stringify(metrics))
   }, [metrics])
+
+  // Save user profile
+  useEffect(() => {
+    if (userProfile) {
+      localStorage.setItem('userProfile', JSON.stringify(userProfile))
+    }
+  }, [userProfile])
 
   // Save customization settings
   useEffect(() => {
@@ -147,6 +166,20 @@ const App: React.FC = () => {
     setVisibilitySettings(newVisibility)
   }
 
+  const handleProfileSave = (profile: UserProfile) => {
+    setUserProfile(profile)
+  }
+
+  const handleMetricCardClick = (metricType: HealthMetric['type']) => {
+    setSelectedMetricType(metricType)
+    setIsSingleMetricModalOpen(true)
+  }
+
+  const handleSingleMetricModalClose = () => {
+    setIsSingleMetricModalOpen(false)
+    setSelectedMetricType(null)
+  }
+
   const renderCurrentView = () => {
     switch (currentView) {
       case 'dashboard':
@@ -157,6 +190,8 @@ const App: React.FC = () => {
             getLatestMetric={getLatestMetric}
             metricOrder={metricOrder}
             visibilitySettings={visibilitySettings}
+            userProfile={userProfile}
+            onMetricCardClick={handleMetricCardClick}
           />
         )
       case 'history':
@@ -187,6 +222,10 @@ const App: React.FC = () => {
     }
   }
 
+  const selectedMetricConfig = selectedMetricType 
+    ? metricConfigs.find(config => config.type === selectedMetricType)
+    : null
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       {/* Header */}
@@ -200,8 +239,8 @@ const App: React.FC = () => {
                 <Heart className="h-6 w-6 text-white" />
               </div>
               <div className="min-w-0 flex-1">
-                <h1 className="text-xl font-bold text-gray-900 truncate">Health Kaki v995 updated 4 Jul 2025</h1>
-                <p className="text-sm text-gray-500">Health management at ease, at peace</p>
+                <h1 className="text-xl font-bold text-gray-900 truncate">Health Kaki</h1>
+                <p className="text-sm text-gray-500">Track what matters, when it matters</p>
               </div>
             </div>
 
@@ -256,6 +295,17 @@ const App: React.FC = () => {
             {/* Desktop Action Buttons */}
             <div className="flex items-center space-x-2 ml-4">
               <button
+                onClick={() => setIsProfileOpen(true)}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors text-sm ${
+                  userProfile 
+                    ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-50 border border-blue-200' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                <User className="h-4 w-4" />
+                <span>{userProfile ? 'My Profile' : 'Add Profile'}</span>
+              </button>
+              <button
                 onClick={() => setIsCustomizationOpen(true)}
                 className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors text-sm"
               >
@@ -282,7 +332,7 @@ const App: React.FC = () => {
                 </div>
                 <div className="min-w-0 flex-1">
                   <h1 className="text-sm xs:text-base sm:text-lg font-bold text-gray-900 truncate">Health Kaki</h1>
-                  <p className="text-xs text-gray-500 hidden xs:block">Your personal health companion</p>
+                  <p className="text-xs text-gray-500 hidden xs:block">Track what matters, when it matters</p>
                 </div>
               </div>
 
@@ -348,6 +398,18 @@ const App: React.FC = () => {
                 >
                   <Lightbulb className="h-3 w-3 xs:h-4 xs:w-4" />
                   <span>My Insights</span>
+                </button>
+                
+                <button
+                  onClick={() => setIsProfileOpen(true)}
+                  className={`flex items-center space-x-1 xs:space-x-1.5 px-2 xs:px-3 sm:px-4 py-1.5 xs:py-2 rounded-lg font-medium transition-colors text-xs xs:text-sm whitespace-nowrap flex-shrink-0 ${
+                    userProfile 
+                      ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-50 border border-blue-200' 
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 border border-gray-200'
+                  }`}
+                >
+                  <User className="h-3 w-3 xs:h-4 xs:w-4" />
+                  <span>{userProfile ? 'Profile' : 'Add Profile'}</span>
                 </button>
                 
                 <button
@@ -418,6 +480,20 @@ const App: React.FC = () => {
                   </button>
                   <button
                     onClick={() => {
+                      setIsProfileOpen(true)
+                      closeMobileMenu()
+                    }}
+                    className={`flex items-center space-x-2 xs:space-x-3 px-2 xs:px-3 py-2 xs:py-2.5 rounded-lg font-medium transition-colors text-xs xs:text-sm ${
+                      userProfile 
+                        ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-50' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-white'
+                    }`}
+                  >
+                    <User className="h-3 w-3 xs:h-4 xs:w-4 flex-shrink-0" />
+                    <span>{userProfile ? 'My Profile' : 'Add Profile'}</span>
+                  </button>
+                  <button
+                    onClick={() => {
                       setIsCustomizationOpen(true)
                       closeMobileMenu()
                     }}
@@ -458,13 +534,22 @@ const App: React.FC = () => {
         <Plus className="h-4 w-4 xs:h-5 xs:w-5 sm:h-6 sm:w-6" />
       </button>
 
-      {/* Add Metric Modal */}
+      {/* Add Metric Modal (Multi-metric) */}
       <AddMetricModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAddMetric={addMetric}
         metricConfigs={metricConfigs}
         metrics={metrics}
+      />
+
+      {/* Single Metric Modal */}
+      <SingleMetricModal
+        isOpen={isSingleMetricModalOpen}
+        onClose={handleSingleMetricModalClose}
+        onAddMetric={addMetric}
+        metricType={selectedMetricType!}
+        metricConfig={selectedMetricConfig}
       />
 
       {/* Customization Modal */}
@@ -476,6 +561,14 @@ const App: React.FC = () => {
         onVisibilityChange={handleVisibilityChange}
         currentOrder={metricOrder}
         visibilitySettings={visibilitySettings}
+      />
+
+      {/* User Profile Modal */}
+      <UserProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        onSave={handleProfileSave}
+        currentProfile={userProfile}
       />
     </div>
   )
