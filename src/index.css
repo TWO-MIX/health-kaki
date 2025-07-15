@@ -6,11 +6,9 @@
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
   color-scheme: light;
   color: rgba(17, 24, 39, 0.87);
   background-color: #ffffff;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -32,7 +30,6 @@ body {
   text-align: left;
 }
 
-/* Custom scrollbar styles */
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -42,7 +39,6 @@ body {
   display: none;
 }
 
-/* Ensure proper mobile responsiveness */
 @media (max-width: 640px) {
   body {
     place-items: flex-start;

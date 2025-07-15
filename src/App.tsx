@@ -240,7 +240,7 @@ const App: React.FC = () => {
               </div>
               <div className="min-w-0 flex-1">
                 <h1 className="text-xl font-bold text-gray-900 truncate">Health Kaki</h1>
-                <p className="text-sm text-gray-500">Track what matters, when it matters</p>
+                <p className="text-sm text-gray-500">Your personal health companion</p>
               </div>
             </div>
 
@@ -332,7 +332,7 @@ const App: React.FC = () => {
                 </div>
                 <div className="min-w-0 flex-1">
                   <h1 className="text-sm xs:text-base sm:text-lg font-bold text-gray-900 truncate">Health Kaki</h1>
-                  <p className="text-xs text-gray-500 hidden xs:block">Track what matters, when it matters</p>
+                  <p className="text-xs text-gray-500 hidden xs:block">Your personal health companion</p>
                 </div>
               </div>
 

@@ -14,7 +14,7 @@ const TrendVisualization: React.FC<TrendVisualizationProps> = ({
   metricConfigs, 
   visibilitySettings 
 }) => {
-  const [selectedPeriod, setSelectedPeriod] = useState<7 | 30>(7)
+  const [selectedPeriod, setSelectedPeriod] = useState<7 | 30 | 90>(7)
 
   const getTrendData = (type: HealthMetric['type'], days: number) => {
     const cutoffDate = new Date()
@@ -124,7 +124,7 @@ const TrendVisualization: React.FC<TrendVisualizationProps> = ({
           <div className="bg-gray-100 rounded-lg p-1 flex">
             <button
               onClick={() => setSelectedPeriod(7)}
-              className={`px-3 xs:px-4 sm:px-6 py-1.5 xs:py-2 rounded-md text-xs xs:text-sm sm:text-base font-medium transition-all ${
+              className={`px-2 xs:px-3 sm:px-4 lg:px-6 py-1.5 xs:py-2 rounded-md text-xs xs:text-sm sm:text-base font-medium transition-all ${
                 selectedPeriod === 7
                   ? 'bg-white text-blue-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
@@ -135,7 +135,7 @@ const TrendVisualization: React.FC<TrendVisualizationProps> = ({
             </button>
             <button
               onClick={() => setSelectedPeriod(30)}
-              className={`px-3 xs:px-4 sm:px-6 py-1.5 xs:py-2 rounded-md text-xs xs:text-sm sm:text-base font-medium transition-all ${
+              className={`px-2 xs:px-3 sm:px-4 lg:px-6 py-1.5 xs:py-2 rounded-md text-xs xs:text-sm sm:text-base font-medium transition-all ${
                 selectedPeriod === 30
                   ? 'bg-white text-blue-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
@@ -144,24 +144,46 @@ const TrendVisualization: React.FC<TrendVisualizationProps> = ({
               <Calendar className="h-3 w-3 xs:h-4 xs:w-4 inline mr-1 xs:mr-2" />
               30 Days
             </button>
+            <button
+              onClick={() => setSelectedPeriod(90)}
+              className={`px-2 xs:px-3 sm:px-4 lg:px-6 py-1.5 xs:py-2 rounded-md text-xs xs:text-sm sm:text-base font-medium transition-all ${
+                selectedPeriod === 90
+                  ? 'bg-white text-purple-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <Calendar className="h-3 w-3 xs:h-4 xs:w-4 inline mr-1 xs:mr-2" />
+              90 Days
+            </button>
           </div>
         </div>
       </div>
 
       {/* Medical Context Info */}
-      <div className="w-full bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg xs:rounded-xl sm:rounded-2xl p-3 xs:p-4 sm:p-6 border border-blue-200">
+      <div className={`w-full rounded-lg xs:rounded-xl sm:rounded-2xl p-3 xs:p-4 sm:p-6 border ${
+        selectedPeriod === 90 
+          ? 'bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200'
+          : 'bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200'
+      }`}>
         <div className="flex items-start space-x-2 xs:space-x-3">
-          <Activity className="h-4 w-4 xs:h-5 xs:w-5 sm:h-6 sm:w-6 text-blue-500 mt-0.5 flex-shrink-0" />
+          <Activity className={`h-4 w-4 xs:h-5 xs:w-5 sm:h-6 sm:w-6 mt-0.5 flex-shrink-0 ${
+            selectedPeriod === 90 ? 'text-purple-500' : 'text-blue-500'
+          }`} />
           <div>
             <h3 className="text-sm xs:text-base sm:text-lg font-bold text-gray-900 mb-1 xs:mb-2">
               {selectedPeriod}-Day Medical Trends
             </h3>
             <p className="text-xs xs:text-sm sm:text-base text-gray-700 leading-relaxed">
               <strong>Uncle/Auntie, these charts very useful for you and your doctor!</strong> 
-              {selectedPeriod === 7 
-                ? ' 7-day trends show recent changes - perfect for checking if new medication working or not. Show this to your doctor during next visit ah!'
-                : ' 30-day trends show longer patterns - excellent for seeing how your body responding to treatment over time. Your doctor will be very impressed with your detailed tracking!'
-              }
+              {selectedPeriod === 7 && (
+                ' 7-day trends show recent changes - perfect for checking if new medication working or not. Show this to your doctor during next visit ah!'
+              )}
+              {selectedPeriod === 30 && (
+                ' 30-day trends show longer patterns - excellent for seeing how your body responding to treatment over time. Your doctor will be very impressed with your detailed tracking!'
+              )}
+              {selectedPeriod === 90 && (
+                ' 90-day trends show the BIG PICTURE - perfect for chronic conditions like diabetes and high blood pressure! This is what specialists love to see - shows seasonal patterns, medication effectiveness over time, and long-term health improvements. Very professional tracking lah!'
+              )}
             </p>
           </div>
         </div>
@@ -238,7 +260,7 @@ const TrendVisualization: React.FC<TrendVisualizationProps> = ({
                         axisLine={false}
                         tickLine={false}
                         tick={{ fontSize: 10, fill: '#6b7280' }}
-                        interval={selectedPeriod === 30 ? 'preserveStartEnd' : 0}
+                        interval={selectedPeriod === 90 ? 'preserveStartEnd' : selectedPeriod === 30 ? 'preserveStartEnd' : 0}
                       />
                       <YAxis 
                         axisLine={false}
@@ -297,7 +319,7 @@ const TrendVisualization: React.FC<TrendVisualizationProps> = ({
         })}
       </div>
 
-      {/* Medical Advice Section */}
+      {/* Medical Advice Section - Enhanced for 90-day */}
       <div className="w-full bg-white rounded-lg xs:rounded-xl sm:rounded-2xl shadow-lg p-3 xs:p-4 sm:p-6">
         <h3 className="text-sm xs:text-base sm:text-lg lg:text-xl font-bold text-gray-900 mb-2 xs:mb-3 sm:mb-4">
           How to Use These Trends with Your Doctor
@@ -321,6 +343,14 @@ const TrendVisualization: React.FC<TrendVisualizationProps> = ({
               <strong>30-day trends show the big picture!</strong> Use this for long-term medication adjustments. Your doctor can see if your overall health improving over the month. Very useful for chronic conditions like diabetes and high blood pressure!
             </p>
           </div>
+          {selectedPeriod === 90 && (
+            <div className="flex items-start space-x-1.5 xs:space-x-2 sm:space-x-3 p-1.5 xs:p-2 sm:p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200">
+              <Calendar className="h-3 w-3 xs:h-4 xs:w-4 sm:h-5 sm:w-5 text-purple-600 mt-0.5 flex-shrink-0" />
+              <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">
+                <strong>90-day trends are GOLD for specialists!</strong> This shows seasonal patterns, long-term medication effectiveness, and lifestyle impact on your health. Perfect for diabetes specialists, cardiologists, and family doctors. They can see if your condition is truly improving over 3 months - this is professional-level health tracking that doctors really appreciate!
+              </p>
+            </div>
+          )}
           <div className="flex items-start space-x-1.5 xs:space-x-2 sm:space-x-3 p-1.5 xs:p-2 sm:p-3 bg-yellow-50 rounded-lg">
             <TrendingDown className="h-3 w-3 xs:h-4 xs:w-4 sm:h-5 sm:w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
             <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">
