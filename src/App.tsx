@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Heart, Activity, Droplets, Gauge, Plus, BarChart3, Clock, Lightbulb, Menu, X, Settings, TrendingUp, User } from 'lucide-react'
+import { Heart, Activity, Droplets, Gauge, Plus, BarChart3, Clock, Lightbulb, Menu, X, Settings, TrendingUp, User, Shield } from 'lucide-react'
 import AddMetricModal from './components/AddMetricModal'
 import SingleMetricModal from './components/SingleMetricModal'
 import Dashboard from './components/Dashboard'
@@ -8,6 +8,7 @@ import HealthInsights from './components/HealthInsights'
 import TrendVisualization from './components/TrendVisualization'
 import CustomizationModal from './components/CustomizationModal'
 import UserProfileModal, { UserProfile } from './components/UserProfileModal'
+import DataPrivacyModal from './components/DataPrivacyModal'
 
 export interface HealthMetric {
   id: string
@@ -28,6 +29,7 @@ const App: React.FC = () => {
   const [selectedMetricType, setSelectedMetricType] = useState<HealthMetric['type'] | null>(null)
   const [isCustomizationOpen, setIsCustomizationOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [isDataPrivacyOpen, setIsDataPrivacyOpen] = useState(false)
   const [currentView, setCurrentView] = useState<ViewType>('dashboard')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [metricOrder, setMetricOrder] = useState<string[]>([])
@@ -180,6 +182,38 @@ const App: React.FC = () => {
     setSelectedMetricType(null)
   }
 
+  const handleDataReset = () => {
+    // Clear all localStorage data
+    localStorage.removeItem('healthMetrics')
+    localStorage.removeItem('userProfile')
+    localStorage.removeItem('metricOrder')
+    localStorage.removeItem('visibilitySettings')
+    
+    // Reset all state to defaults
+    setMetrics([])
+    setUserProfile(undefined)
+    
+    // Reset to default settings
+    const defaultOrder = metricConfigs.map(config => config.type)
+    const defaultVisibility = metricConfigs.reduce((acc, config) => {
+      acc[config.type] = true
+      return acc
+    }, {} as Record<string, boolean>)
+    
+    setMetricOrder(defaultOrder)
+    setVisibilitySettings(defaultVisibility)
+    
+    // Reset view to dashboard
+    setCurrentView('dashboard')
+    
+    // Close all modals
+    setIsModalOpen(false)
+    setIsSingleMetricModalOpen(false)
+    setIsCustomizationOpen(false)
+    setIsProfileOpen(false)
+    setIsMobileMenuOpen(false)
+  }
+
   const renderCurrentView = () => {
     switch (currentView) {
       case 'dashboard':
@@ -313,6 +347,13 @@ const App: React.FC = () => {
                 <span>Customize</span>
               </button>
               <button
+                onClick={() => setIsDataPrivacyOpen(true)}
+                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors text-sm"
+              >
+                <Shield className="h-4 w-4" />
+                <span>Privacy</span>
+              </button>
+              <button
                 onClick={() => setIsModalOpen(true)}
                 className="flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-green-500 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-green-600 transition-all duration-200 shadow-lg hover:shadow-xl text-sm"
               >
@@ -421,6 +462,14 @@ const App: React.FC = () => {
                 </button>
                 
                 <button
+                  onClick={() => setIsDataPrivacyOpen(true)}
+                  className="flex items-center space-x-1 xs:space-x-1.5 px-2 xs:px-3 sm:px-4 py-1.5 xs:py-2 rounded-lg font-medium transition-colors text-xs xs:text-sm whitespace-nowrap flex-shrink-0 text-gray-600 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                >
+                  <Shield className="h-3 w-3 xs:h-4 xs:w-4" />
+                  <span>Privacy</span>
+                </button>
+                
+                <button
                   onClick={() => setIsModalOpen(true)}
                   className="flex items-center space-x-1 xs:space-x-1.5 bg-gradient-to-r from-blue-500 to-green-500 text-white px-2 xs:px-3 sm:px-4 py-1.5 xs:py-2 rounded-lg hover:from-blue-600 hover:to-green-600 transition-all duration-200 shadow-lg text-xs xs:text-sm whitespace-nowrap flex-shrink-0"
                 >
@@ -504,6 +553,16 @@ const App: React.FC = () => {
                   </button>
                   <button
                     onClick={() => {
+                      setIsDataPrivacyOpen(true)
+                      closeMobileMenu()
+                    }}
+                    className="flex items-center space-x-2 xs:space-x-3 px-2 xs:px-3 py-2 xs:py-2.5 rounded-lg font-medium transition-colors text-xs xs:text-sm text-gray-600 hover:text-gray-900 hover:bg-white"
+                  >
+                    <Shield className="h-3 w-3 xs:h-4 xs:w-4 flex-shrink-0" />
+                    <span>Data Privacy</span>
+                  </button>
+                  <button
+                    onClick={() => {
                       setIsModalOpen(true)
                       closeMobileMenu()
                     }}
@@ -569,6 +628,13 @@ const App: React.FC = () => {
         onClose={() => setIsProfileOpen(false)}
         onSave={handleProfileSave}
         currentProfile={userProfile}
+      />
+
+      {/* Data Privacy Modal */}
+      <DataPrivacyModal
+        isOpen={isDataPrivacyOpen}
+        onClose={() => setIsDataPrivacyOpen(false)}
+        onResetData={handleDataReset}
       />
     </div>
   )

@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { HealthMetric } from '../App'
 import { UserProfile } from './UserProfileModal'
 import { analyzeDemographicHealth } from '../utils/demographicHealthAnalysis'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { AlertTriangle, Info, ChevronDown, ChevronUp, Minimize2, Maximize2 } from 'lucide-react'
 
 interface DashboardProps {
   metrics: HealthMetric[]
@@ -23,6 +24,25 @@ const Dashboard: React.FC<DashboardProps> = ({
   userProfile,
   onMetricCardClick
 }) => {
+  const [isDisclaimerCollapsed, setIsDisclaimerCollapsed] = useState(false)
+
+  // Load disclaimer state from localStorage
+  useEffect(() => {
+    const savedState = localStorage.getItem('disclaimerCollapsed')
+    if (savedState) {
+      setIsDisclaimerCollapsed(JSON.parse(savedState))
+    }
+  }, [])
+
+  // Save disclaimer state to localStorage
+  useEffect(() => {
+    localStorage.setItem('disclaimerCollapsed', JSON.stringify(isDisclaimerCollapsed))
+  }, [isDisclaimerCollapsed])
+
+  const toggleDisclaimer = () => {
+    setIsDisclaimerCollapsed(!isDisclaimerCollapsed)
+  }
+
   const getMetricData = (type: HealthMetric['type']) => {
     return metrics
       .filter(metric => metric.type === type)
@@ -107,6 +127,88 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <div className="w-full space-y-4 xs:space-y-5 sm:space-y-6 lg:space-y-8">
+      {/* Collapsible Prototype Disclaimer */}
+      <div className="w-full bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-lg xs:rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-300">
+        {/* Header - Always Visible */}
+        <div 
+          className="flex items-center justify-between p-3 xs:p-4 sm:p-6 cursor-pointer hover:bg-orange-100 hover:bg-opacity-50 transition-colors"
+          onClick={toggleDisclaimer}
+        >
+          <div className="flex items-center space-x-2 xs:space-x-3 flex-1 min-w-0">
+            <AlertTriangle className="h-4 w-4 xs:h-5 xs:w-5 sm:h-6 sm:w-6 text-orange-600 flex-shrink-0" />
+            <h3 className="text-sm xs:text-base sm:text-lg font-bold text-orange-900 truncate">
+              ⚠️ Important: Prototype Application
+            </h3>
+          </div>
+          
+          <div className="flex items-center space-x-2 flex-shrink-0">
+            {/* Collapse/Expand Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                toggleDisclaimer()
+              }}
+              className="flex items-center space-x-1 px-2 xs:px-3 py-1 xs:py-1.5 bg-orange-200 hover:bg-orange-300 text-orange-800 rounded-lg transition-colors text-xs xs:text-sm font-medium"
+              title={isDisclaimerCollapsed ? "Expand disclaimer" : "Minimize disclaimer"}
+            >
+              {isDisclaimerCollapsed ? (
+                <>
+                  <Maximize2 className="h-3 w-3 xs:h-4 xs:w-4" />
+                  <span className="hidden xs:inline">Show</span>
+                </>
+              ) : (
+                <>
+                  <Minimize2 className="h-3 w-3 xs:h-4 xs:w-4" />
+                  <span className="hidden xs:inline">Hide</span>
+                </>
+              )}
+            </button>
+            
+            {/* Chevron Indicator */}
+            <div className="text-orange-600">
+              {isDisclaimerCollapsed ? (
+                <ChevronDown className="h-4 w-4 xs:h-5 xs:w-5" />
+              ) : (
+                <ChevronUp className="h-4 w-4 xs:h-5 xs:w-5" />
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Collapsible Content */}
+        <div className={`transition-all duration-300 ease-in-out ${
+          isDisclaimerCollapsed 
+            ? 'max-h-0 opacity-0 overflow-hidden' 
+            : 'max-h-96 opacity-100 overflow-visible'
+        }`}>
+          <div className="px-3 xs:px-4 sm:px-6 pb-3 xs:pb-4 sm:pb-6 border-t border-orange-200">
+            <div className="space-y-1 xs:space-y-2 text-xs xs:text-sm sm:text-base text-orange-800 pt-2 xs:pt-3">
+              <p className="leading-relaxed">
+                <strong>This is a proof-of-concept prototype</strong> and is nowhere near a final product. 
+                Please do not rely on this app for actual medical decisions or health monitoring.
+              </p>
+              <div className="flex items-start space-x-2 mt-2 xs:mt-3">
+                <Info className="h-3 w-3 xs:h-4 xs:w-4 text-orange-600 flex-shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-medium">Data Storage:</p>
+                  <p>All information you enter is stored locally in your browser only. No data is sent to any servers.</p>
+                  <p>You can delete all your data anytime using the <strong>"Privacy"</strong> section in the navigation.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Collapsed State Summary */}
+        {isDisclaimerCollapsed && (
+          <div className="px-3 xs:px-4 sm:px-6 pb-2 xs:pb-3 border-t border-orange-200">
+            <p className="text-xs text-orange-700 leading-relaxed">
+              Prototype app - not for medical use • Data stored locally • Click to expand
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* Welcome Message */}
       <div className="text-center px-1 xs:px-2">
         <h2 className="text-lg xs:text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 xs:mb-2">
